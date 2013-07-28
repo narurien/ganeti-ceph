@@ -1,4 +1,6 @@
-Ganeti 2.7.1 With RBD userspace support
+Ganeti 2.7
 ===
+
+With RBD userspace support
 
 
