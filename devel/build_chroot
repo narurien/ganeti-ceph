@@ -1,0 +1,245 @@
+#!/bin/bash
+#Configuration
+: ${ARCH:=amd64}
+: ${DIST_RELEASE:=squeeze}
+: ${CONF_DIR:=/etc/schroot/chroot.d}
+: ${CHROOT_DIR:=/srv/chroot}
+: ${ALTERNATIVE_EDITOR:=/usr/bin/vim.basic}
+: ${CHROOT_FINAL_HOOK:=/bin/true}
+# Additional Variables taken from the environmen
+# DATA_DIR
+# CHROOT_EXTRA_DEBIAN_PACKAGES    
+
+#Automatically generated variables
+CHROOTNAME=$DIST_RELEASE-$ARCH
+CHNAME=building_$CHROOTNAME
+TEMP_CHROOT_CONF=$CONF_DIR/$CHNAME.conf
+FINAL_CHROOT_CONF=$CHROOTNAME.conf
+ROOT=`pwd`
+CHDIR=$ROOT/$CHNAME
+USER=`whoami`
+COMP_FILENAME=$CHROOTNAME.tar.gz
+COMP_FILEPATH=$ROOT/$COMP_FILENAME
+TEMP_DATA_DIR=`mktemp -d`
+ACTUAL_DATA_DIR=$DATA_DIR
+ACTUAL_DATA_DIR=${ACTUAL_DATA_DIR:-$TEMP_DATA_DIR}
+
+#Runnability checks
+if [ $USER != 'root' ]
+then
+  echo "This script requires root permissions to run"
+  exit
+fi
+
+if [ -f $TEMP_CHROOT_CONF ]
+then
+  echo "The configuration file name for the temporary chroot"
+  echo "  $TEMP_CHROOT_CONF"
+  echo "already exists."
+  echo "Remove it or change the CHNAME value in the script."
+  exit
+fi
+
+#Create configuration dir and files if they do not exist
+if [ ! -d $ACTUAL_DATA_DIR ]
+then
+  mkdir $ACTUAL_DATA_DIR
+  echo "The data directory"
+  echo "  $ACTUAL_DATA_DIR"
+  echo "has been created."
+fi
+
+if [ ! -f $ACTUAL_DATA_DIR/final.schroot.conf.in ]
+then
+  cat <<END >$ACTUAL_DATA_DIR/final.schroot.conf.in
+[${CHROOTNAME}]
+description=Debian ${DIST_RELEASE} ${ARCH}
+groups=src
+source-root-groups=root
+type=file
+file=${CHROOT_DIR}/${COMP_FILENAME}
+END
+  echo "The file"
+  echo " $ACTUAL_DATA_DIR/final.schroot.conf.in"
+  echo "has been created with default configurations."
+fi
+
+if [ ! -f $ACTUAL_DATA_DIR/temp.schroot.conf.in ]
+then
+  cat <<END >$ACTUAL_DATA_DIR/temp.schroot.conf.in
+[${CHNAME}]
+description=Debian ${DIST_RELEASE} ${ARCH}
+directory=${CHDIR}
+groups=src
+users=root
+type=directory
+END
+  echo "The file"
+  echo " $ACTUAL_DATA_DIR/temp.schroot.conf.in"
+  echo "has been created with default configurations."
+fi
+
+#Stop on errors
+set -e
+
+#Cleanup
+rm -rf $CHDIR
+mkdir $CHDIR
+
+#Install tools for building chroots
+apt-get install -y schroot debootstrap
+
+shopt -s expand_aliases
+alias in_chroot='schroot -c $CHNAME -d / '
+alias subst_variables='sed \
+  -e "s/\${ARCH}/$ARCH/" \
+  -e "s*\${CHDIR}*$CHDIR*" \
+  -e "s/\${CHNAME}/$CHNAME/" \
+  -e "s/\${CHROOTNAME}/$CHROOTNAME/" \
+  -e "s*\${CHROOT_DIR}*$CHROOT_DIR*" \
+  -e "s/\${COMP_FILENAME}/$COMP_FILENAME/" \
+  -e "s/\${DIST_RELEASE}/$DIST_RELEASE/"'
+
+#Generate chroot configurations
+cat $ACTUAL_DATA_DIR/temp.schroot.conf.in | subst_variables > $TEMP_CHROOT_CONF
+cat $ACTUAL_DATA_DIR/final.schroot.conf.in | subst_variables > $FINAL_CHROOT_CONF
+
+#Install the base system
+debootstrap --arch $ARCH $DIST_RELEASE $CHDIR
+
+APT_INSTALL="apt-get install -y --no-install-recommends"
+
+echo "deb http://backports.debian.org/debian-backports" \
+     "$DIST_RELEASE-backports main contrib non-free" \
+     > $CHDIR/etc/apt/sources.list.d/backports.list
+
+#Install all the packages
+in_chroot -- \
+  apt-get update
+
+#Install selected packages from backports
+in_chroot -- \
+  $APT_INSTALL -t squeeze-backports \
+    git \
+    git-email \
+    vim
+
+in_chroot -- \
+  $APT_INSTALL python-setuptools build-essential python-dev sudo automake \
+               fakeroot rsync locales less
+
+echo "en_US.UTF-8 UTF-8" >> $CHDIR/etc/locale.gen
+
+in_chroot -- \
+  locale-gen
+
+in_chroot -- \
+  $APT_INSTALL lvm2 ssh bridge-utils iproute iputils-arping \
+               ndisc6 python python-pyopenssl openssl \
+               python-pyparsing python-simplejson \
+               python-pyinotify python-pycurl python-yaml python-mock \
+               socat fping
+
+in_chroot -- \
+  $APT_INSTALL python-paramiko qemu-utils
+
+in_chroot -- \
+  easy_install affinity bitarray ipaddr
+
+#Haskell packages
+in_chroot -- \
+  $APT_INSTALL ghc6 \
+               libghc6-parallel-dev libghc6-deepseq-dev \
+               libghc6-curl-dev
+
+in_chroot -- \
+  $APT_INSTALL cabal-install
+
+in_chroot -- \
+  cabal update
+
+in_chroot -- \
+  $APT_INSTALL libpcre3-dev
+
+in_chroot -- \
+  cabal install --global \
+    network==2.3 \
+    regex-pcre==0.94.2 \
+    hinotify==0.3.2 \
+    hslogger==1.1.4 \
+    attoparsec==0.10.1.1\
+    quickcheck==2.5.1.1 \
+    crypto==4.2.4 \
+    monadcatchio-transformers==0.2.2.0 \
+    mtl==2.0.1.0 \
+    hashable==1.1.2.0 \
+    case-insensitive==0.3 \
+    parsec==3.0.1 \
+    network==2.3 \
+    snap-server==0.8.1 \
+    text==0.11.3.0 \
+    vector==0.9.1 \
+    json==0.4.4 \
+    process==1.0.1.2
+
+#Python development tools
+in_chroot -- \
+  $APT_INSTALL pandoc python-epydoc graphviz
+
+in_chroot -- \
+  easy_install sphinx==1.1.3 \
+               logilab-common \
+               logilab-astng==0.23.1 \
+               pylint==0.25.1 \
+               pep8==1.2 \
+               coverage
+
+#Haskell development tools
+in_chroot -- \
+  cabal install --global \
+    hunit==1.2.5.2 \
+    happy==1.18.10 \
+    hlint==1.8.34 \
+    hscolour==1.20.3 \
+    temporary==1.1.2.3 \
+    test-framework==0.6.1 \
+    test-framework-hunit==0.2.7 \
+    test-framework-quickcheck2==0.2.12.3
+
+in_chroot -- \
+  cabal install --global shelltestrunner
+
+#Tools for creating debian packages
+in_chroot -- \
+  $APT_INSTALL python-docutils debhelper quilt
+
+# extra debian packages
+
+for package in $CHROOT_EXTRA_DEBIAN_PACKAGES
+do in_chroot -- \
+  $APT_INSTALL $package
+done
+
+#Set default editor
+in_chroot -- \
+  update-alternatives --set editor $ALTERNATIVE_EDITOR
+
+# Final user hook
+
+in_chroot -- $CHROOT_FINAL_HOOK
+
+rm -f $COMP_FILEPATH
+echo "Creating compressed schroot image..."
+cd $CHDIR
+tar czf $COMP_FILEPATH ./*
+cd $ROOT
+
+rm -rf $CHDIR
+rm -f $TEMP_CHROOT_CONF
+rm -rf $TEMP_DATA_DIR
+
+echo "Chroot created. In order to run it:"
+echo " * Copy the file $FINAL_CHROOT_CONF to $CONF_DIR/$FINAL_CHROOT_CONF"
+echo " * Copy the file $COMP_FILEPATH to $CHROOT_DIR/$COMP_FILENAME"
+
+echo "Then run \"schroot -c $CHROOTNAME\""

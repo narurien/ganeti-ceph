@@ -1,0 +1,140 @@
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+# global ignores
+*.py[co]
+*.swp
+*~
+*.o
+*.hi
+*.hp
+*.tix
+*.prof
+*.stat
+.hpc/
+
+# /
+/Makefile
+/Makefile.in
+/Makefile.local
+/TAGS
+/aclocal.m4
+/autom4te.cache
+/autotools/install-sh
+/autotools/missing
+/autotools/py-compile
+/autotools/replace_vars.sed
+/autotools/shell-env-init
+/config.log
+/config.status
+/configure
+/devel/squeeze-amd64.tar.gz
+/devel/squeeze-amd64.conf
+/epydoc.conf
+/ganeti
+/stamp-srclinks
+/stamp-directories
+/vcs-version
+/*.patch
+/*.tar.bz2
+/*.tar.gz
+/ganeti-[0-9]*.[0-9]*.[0-9]*
+
+# daemons
+/daemons/daemon-util
+/daemons/ganeti-cleaner
+/daemons/ganeti-masterd
+/daemons/ganeti-noded
+/daemons/ganeti-rapi
+/daemons/ganeti-watcher
+
+# doc
+/doc/api/
+/doc/coverage/
+/doc/html/
+/doc/man-html/
+/doc/install-quick.rst
+/doc/news.rst
+/doc/upgrade.rst
+/doc/hs-lint.html
+/doc/manpages-enabled.rst
+/doc/man-*.rst
+
+# doc/examples
+/doc/examples/bash_completion
+/doc/examples/bash_completion-debug
+/doc/examples/ganeti.cron
+/doc/examples/ganeti.initd
+/doc/examples/ganeti.logrotate
+/doc/examples/ganeti-kvm-poweroff.initd
+/doc/examples/ganeti-master-role.ocf
+/doc/examples/ganeti-node-role.ocf
+/doc/examples/gnt-config-backup
+/doc/examples/hooks/ipsec
+
+# lib
+/lib/_autoconf.py
+/lib/_vcsversion.py
+/lib/_generated_rpc.py
+
+# man
+/man/*.[0-9]
+/man/*.html
+/man/*.in
+/man/*.gen
+
+# test/hs
+/test/hs/hail
+/test/hs/harep
+/test/hs/hbal
+/test/hs/hcheck
+/test/hs/hinfo
+/test/hs/hroller
+/test/hs/hscan
+/test/hs/hspace
+/test/hs/hpc-htools
+/test/hs/hpc-mon-collector
+/test/hs/htest
+
+# tools
+/tools/kvm-ifup
+/tools/burnin
+/tools/ensure-dirs
+/tools/users-setup
+/tools/vcluster-setup
+/tools/vif-ganeti
+/tools/net-common
+/tools/node-cleanup
+/tools/node-daemon-setup
+/tools/prepare-node-join
+
+# scripts
+/scripts/gnt-backup
+/scripts/gnt-cluster
+/scripts/gnt-debug
+/scripts/gnt-group
+/scripts/gnt-instance
+/scripts/gnt-job
+/scripts/gnt-node
+/scripts/gnt-os
+/scripts/gnt-network
+/scripts/gnt-storage
+
+# haskell-specific rules
+/src/mon-collector
+/src/htools
+/src/hconfd
+/src/hluxid
+/src/ganeti-confd
+/src/ganeti-luxid
+/src/ganeti-mond
+/src/rpc-test
+
+# automatically-built Haskell files
+/src/Ganeti/Constants.hs
+/src/Ganeti/Curl/Internal.hs
+/src/Ganeti/Version.hs
+/test/hs/Test/Ganeti/TestImports.hs
