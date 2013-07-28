@@ -1033,6 +1033,7 @@ def _FormatBlockDevInfo(idx, top_level, dev, roman):
   if top_level:
     if dev["spindles"] is not None:
       data.append(("spindles", dev["spindles"]))
+    data.append(("access type", dev["access_type"]))
     data.append(("access mode", dev["mode"]))
   if dev["logical_id"] is not None:
     try:

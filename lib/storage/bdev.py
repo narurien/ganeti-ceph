@@ -999,6 +999,7 @@ class RADOSBlockDevice(base.BlockDev):
       raise ValueError("Invalid configuration data %s" % str(unique_id))
 
     self.driver, self.rbd_name = unique_id
+    self.rbd_pool = params[constants.LDP_POOL]
 
     self.major = self.minor = None
     self.Attach()
@@ -1334,6 +1335,13 @@ class RADOSBlockDevice(base.BlockDev):
     if result.failed:
       base.ThrowError("rbd resize failed (%s): %s",
                       result.fail_reason, result.output)
+
+  def GetUserspaceAccessUri(self, hypervisor):
+    """ For specific hypervisor type, return the disk URI for userspace
+    access.
+    """
+    if hypervisor == constants.HT_KVM:
+      return "rbd:" + self.rbd_pool + "/" + self.rbd_name
 
 
 class ExtStorageDevice(base.BlockDev):

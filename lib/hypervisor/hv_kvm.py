@@ -1125,7 +1125,7 @@ class KVMHypervisor(hv_base.BaseHypervisor):
       cache_val = ",cache=%s" % disk_cache
     else:
       cache_val = ""
-    for cfdev, dev_path in block_devices:
+    for cfdev, device, dev_path in block_devices:
       if cfdev.mode != constants.DISK_RDWR:
         raise errors.HypervisorError("Instance has read-only disks which"
                                      " are not supported by KVM")
@@ -1137,8 +1137,11 @@ class KVMHypervisor(hv_base.BaseHypervisor):
         if needs_boot_flag and disk_type != constants.HT_DISK_IDE:
           boot_val = ",boot=on"
 
-      drive_val = "file=%s,format=raw%s%s%s" % (dev_path, if_val, boot_val,
-                                                cache_val)
+      if cfdev.params[constants.LDP_ACCESS] == 'userspace':
+        dev_path = device.GetUserspaceAccessUri(constants.HT_KVM)
+
+      drive_val = "file=%s,format=raw%s%s%s" % (dev_path, if_val,
+                                                  boot_val, cache_val)
       kvm_cmd.extend(["-drive", drive_val])
 
     #Now we can specify a different device type for CDROM devices.

@@ -340,6 +340,7 @@ class LUInstanceQueryData(NoHooksLU):
     @attention: The device has to be annotated already.
 
     """
+
     drbd_info = None
     if dev.dev_type in constants.LDS_DRBD:
       # we change the snode then (otherwise we use the one passed in)
@@ -369,6 +370,7 @@ class LUInstanceQueryData(NoHooksLU):
       dev_children = []
 
     return {
+      "access_type": dev.params[constants.LDP_ACCESS],
       "iv_name": dev.iv_name,
       "dev_type": dev.dev_type,
       "logical_id": dev.logical_id,
