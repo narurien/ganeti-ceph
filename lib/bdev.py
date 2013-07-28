@@ -2976,6 +2976,15 @@ class RADOSBlockDevice(BlockDev):
       _ThrowError("rbd resize failed (%s): %s",
                   result.fail_reason, result.output)
 
+  def GetUserspaceAccessUri(self, hypervisor):
+    """ For specific hypervisor type, return the disk URI for userspace
+    access.
+    """
+    rbd_pool = self.params[constants.LDP_POOL]
+    rbd_name = self.unique_id[1]
+    if hypervisor == constants.HT_KVM:
+      return "rbd:" + rbd_pool + "/" + rbd_name
+
 
 class ExtStorageDevice(BlockDev):
   """A block device provided by an ExtStorage Provider.

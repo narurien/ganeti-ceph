@@ -1025,6 +1025,7 @@ def _FormatBlockDevInfo(idx, top_level, dev, roman):
   d1 = ["- %s: %s, size %s" % (txt, dev["dev_type"], nice_size)]
   data = []
   if top_level:
+    data.append(("access type", dev["access_type"]))
     data.append(("access mode", dev["mode"]))
   if dev["logical_id"] is not None:
     try:

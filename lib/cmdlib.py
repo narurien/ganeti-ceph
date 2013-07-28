@@ -13030,6 +13030,7 @@ class LUInstanceQueryData(NoHooksLU):
       dev_children = []
 
     return {
+      "access_type": dev.params[constants.LDP_ACCESS],
       "iv_name": dev.iv_name,
       "dev_type": dev.dev_type,
       "logical_id": dev.logical_id,
