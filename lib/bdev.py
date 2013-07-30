@@ -503,6 +503,18 @@ class BlockDev(object):
       _ThrowError("Failed to parse blockdev output: %s", str(err))
     return sz
 
+  def GetUserspaceAccessUri(self, hypervisor):
+    """Return the Disk URI to be used for userspace access for the
+    specified hypervisor.
+
+    @rtype: string
+    @return: userspace device URI
+
+    """
+    raise errors.BlockDeviceError("%s Block Device Type doesn't support"
+                                  " userspace access" %
+                                  self.__class__.__name__)
+
   def __repr__(self):
     return ("<%s: unique_id: %s, children: %s, %s:%s, %s>" %
             (self.__class__, self.unique_id, self._children,
@@ -2984,6 +2996,8 @@ class RADOSBlockDevice(BlockDev):
     rbd_name = self.unique_id[1]
     if hypervisor == constants.HT_KVM:
       return "rbd:" + rbd_pool + "/" + rbd_name
+    else:
+      raise errors.HypervisorError("Hypervisor %s doesn't support RBD userspace access" % hypervisor)
 
 
 class ExtStorageDevice(BlockDev):

@@ -472,7 +472,7 @@ class XenHypervisor(hv_base.BaseHypervisor):
       # 'z' - 'a' = 24
       raise errors.HypervisorError("Too many disks")
     namespace = [blockdev_prefix + chr(i + ord("a")) for i in range(24)]
-    for sd_name, (cfdev, dev_path) in zip(namespace, block_devices):
+    for sd_name, (cfdev, dev_path, device) in zip(namespace, block_devices):
       if cfdev.mode == constants.DISK_RDWR:
         mode = "w"
       else:

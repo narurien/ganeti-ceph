@@ -10697,6 +10697,20 @@ class LUInstanceCreate(LogicalUnit):
                                  (self.op.hypervisor, ",".join(enabled_hvs)),
                                  errors.ECODE_STATE)
 
+    # Check disk access param to be compatible with specified hypervisor
+    node_info = self.cfg.GetNodeInfo(self.op.pnode_uuid)
+    node_group = self.cfg.GetNodeGroup(node_info.group)
+    disk_params = self.cfg.GetGroupDiskParams(node_group)
+    access_type = disk_params[constants.DT_RBD][constants.LDP_ACCESS]
+
+    if self.op.disk_template == constants.DT_RBD:
+      if self.op.hypervisor != constants.HT_KVM \
+         and access_type == constants.DISK_USERSPACE:
+        raise errors.OpPrereqError("Selected hypervisor (%s) cannot be"
+                                   "used with %s disk access param" %
+                                   (self.op.hypervisor, access_type),
+                                    errors.ECODE_STATE)
+
     # Check tag validity
     for tag in self.op.tags:
       objects.TaggableObject.ValidateTag(tag)
