@@ -1342,6 +1342,8 @@ class RADOSBlockDevice(base.BlockDev):
     """
     if hypervisor == constants.HT_KVM:
       return "rbd:" + self.rbd_pool + "/" + self.rbd_name
+    else:
+       raise errors.HypervisorError("Hypervisor %s doesn't support RBD userspace access" % hypervisor)
 
 
 class ExtStorageDevice(base.BlockDev):

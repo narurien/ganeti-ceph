@@ -632,6 +632,8 @@ LDS_DRBD = compat.UniqueFrozenset([LD_DRBD8])
 DISK_RDONLY = "ro"
 DISK_RDWR = "rw"
 DISK_ACCESS_SET = compat.UniqueFrozenset([DISK_RDONLY, DISK_RDWR])
+DISK_USERSPACE = "userspace"
+DISK_KERNELSPACE = "kernelspace"
 
 # disk replacement mode
 REPLACE_DISK_PRI = "replace_on_primary"    # replace disks on primary
@@ -2237,7 +2239,7 @@ DISK_LD_DEFAULTS = {
   LD_BLOCKDEV: {},
   LD_RBD: {
     LDP_POOL: "rbd",
-    LDP_ACCESS: "userspace",
+    LDP_ACCESS: DISK_USERSPACE,
     },
   LD_EXT: {},
   }
